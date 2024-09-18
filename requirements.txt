@@ -9,7 +9,7 @@ click==8.0.3
 colorama==0.4.4
 Flask==2.0.2
 flask-restx==0.5.1
-idna==3.3
+idna==3.7
 itsdangerous==2.0.1
 Jinja2==3.0.3
 jsonschema==4.2.1
