@@ -1,0 +1,39 @@
+# Directorios de IDE
+.idea/
+.vscode/
+
+# Entornos Virtuales
+.venv/
+venv/
+
+# Archivos de caché y compilación de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+
+# Archivos y directorios generados
+dist/
+build/
+eggs/
+*.egg-info/
+*.cover
+.htmlcov/
+.tox/
+docs/_build/
+*.nib
+
+# Archivos de configuración del entorno
+.env
+.flaskenv
+
+# Archivos generados por pytest y herramientas de análisis
+.pytest_cache/
+.mypy_cache/
+.pylint.d/
+
+# Otros
+*.log
+*.sqlite3
+*.db
