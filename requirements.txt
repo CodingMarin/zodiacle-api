@@ -7,7 +7,7 @@ certifi==2024.7.4
 charset-normalizer==2.0.9
 click==8.0.3
 colorama==0.4.4
-Flask==2.0.2
+Flask==2.1.2
 flask-restx==0.5.1
 idna==3.7
 itsdangerous==2.0.1
