@@ -18,6 +18,7 @@ pycodestyle==2.8.0
 pyrsistent==0.18.0
 python-decouple==3.5
 pytz==2021.3
+python-dotenv==1.0.1
 requests==2.32.2
 six==1.16.0
 soupsieve==2.3.1
