@@ -7,17 +7,15 @@ from flask_jwt_extended import JWTManager
 app = Flask(__name__)
 app.config.from_object(config("APP_SETTINGS"))
 
-# Configurar CORS
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Configurar JWT
 jwt = JWTManager(app)
 
 api = Api(
     app,
     version='1.0',
     title='Zodiacle API',
-    description='La API para gestionar las funcionalidades de Zodiacle. Proporciona acceso a los recursos principales de Zodiacle.',  # Descripción de la API
+    description='La API para gestionar las funcionalidades de Zodiacle. Proporciona acceso a los recursos principales de Zodiacle.',
     terms_url='https://zodiacle.com/terminos',
     license='MIT',
     license_url='https://opensource.org/licenses/MIT',

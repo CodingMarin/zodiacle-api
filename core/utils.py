@@ -1,31 +1,66 @@
 import requests
+import unicodedata
 from bs4 import BeautifulSoup
 
+def get_horoscope_by_day(zodiac_sign: str, day: str):
+    base_url = "https://www.horoscopo.com/horoscopos/general-"
 
-def get_horoscope_by_day(zodiac_sign: int, day: str):
-    if not "-" in day:
-        res = requests.get(
-            f"https://www.horoscope.com/us/horoscopes/general/horoscope-general-daily-{day}.aspx?sign={zodiac_sign}")
+    if day == 'hoy':
+        url = f"{base_url}diaria-{zodiac_sign}"
+    elif day == 'mañana':
+        url = f"{base_url}diaria-manana-{zodiac_sign}"
+    elif day == 'semanal':
+        url = f"{base_url}semanal-{zodiac_sign}"
     else:
-        day = day.replace("-", "")
-        res = requests.get(
-            f"https://www.horoscope.com/us/horoscopes/general/horoscope-archive.aspx?sign={zodiac_sign}&laDate={day}")
+        raise Exception("Parametro incorrecto")
+
+    res = requests.get(url)
+
+    if res.status_code != 200:
+        raise Exception(f"Failed to retrieve horoscope. Status code: {res.status_code}")
+
     soup = BeautifulSoup(res.content, 'html.parser')
-    data = soup.find('div', attrs={'class': 'main-horoscope'})
-    return data.p.text
+    data = soup.find('div', attrs={'class': 'horoscope-box'})
+
+    if data and data.p:
+        return data.p.text
+    else:
+        raise Exception("Horórscopo no encontrado")
 
 
-def get_horoscope_by_week(zodiac_sign: int):
+def get_horoscope_by_week(zodiac_sign: str):
+    base_url = "https://www.horoscopo.com/horoscopos/general-semanal-"
+
     res = requests.get(
-        f"https://www.horoscope.com/us/horoscopes/general/horoscope-general-weekly.aspx?sign={zodiac_sign}")
+        f"{base_url}{zodiac_sign}")
+
     soup = BeautifulSoup(res.content, 'html.parser')
-    data = soup.find('div', attrs={'class': 'main-horoscope'})
-    return data.p.text
+    data = soup.find('div', attrs={'class': 'horoscope-box'})
+
+    if data and data.p:
+        return data.p.text
+    else:
+        raise Exception("Horórscopo no encontrado")
 
 
-def get_horoscope_by_month(zodiac_sign: int):
+def get_horoscope_by_month(zodiac_sign: str):
+    base_url = "https://www.horoscopo.com/horoscopos/mensual-"
+
     res = requests.get(
-        f"https://www.horoscope.com/us/horoscopes/general/horoscope-general-monthly.aspx?sign={zodiac_sign}")
+        f"{base_url}{zodiac_sign}")
+
     soup = BeautifulSoup(res.content, 'html.parser')
-    data = soup.find('div', attrs={'class': 'main-horoscope'})
-    return data.p.text
+    data = soup.find('div', attrs={'class': 'horoscope-box'})
+
+    if data and data.p:
+        return data.p.text
+    else:
+        raise Exception("Horórscopo no encontrado")
+
+
+def normalize_string(input_string):
+    lower_case_string = input_string.lower()
+    normalized_string = unicodedata.normalize('NFKD', lower_case_string)
+    no_accent_string = ''.join(c for c in normalized_string if not unicodedata.combining(c))
+
+    return no_accent_string

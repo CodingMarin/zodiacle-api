@@ -1,46 +1,30 @@
 from core import api
 from datetime import timedelta
 from flask import jsonify
-from core.utils import get_horoscope_by_day, get_horoscope_by_week, get_horoscope_by_month
+from core.utils import get_horoscope_by_day, get_horoscope_by_week, get_horoscope_by_month, normalize_string
 from flask_restx import Resource, reqparse
 from flask_jwt_extended import jwt_required, create_access_token
 from werkzeug.exceptions import BadRequest, NotFound
-from datetime import datetime
 
-horoscope_ns = api.namespace('horoscopes', description='Endpoints for retrieving horoscopes for zodiac signs')
+horoscope_ns = api.namespace('horoscopos', description='Puntos finales para obtener horóscopos para signos zodiacales')
 
-auth_ns = api.namespace('auth', description='Authentication endpoints')
-
-ZODIAC_SIGNS = {
-    "Aries": 1,
-    "Taurus": 2,
-    "Gemini": 3,
-    "Cancer": 4,
-    "Leo": 5,
-    "Virgo": 6,
-    "Libra": 7,
-    "Scorpio": 8,
-    "Sagittarius": 9,
-    "Capricorn": 10,
-    "Aquarius": 11,
-    "Pisces": 12
-}
+auth_ns = api.namespace('auth', description='Puntos finales de autenticación')
 
 parser = reqparse.RequestParser()
-parser.add_argument('sign', type=str, required=True, help='The zodiac sign for which the horoscope is requested')
+parser.add_argument('sign', type=str, required=True, help='El signo zodiacal para el cual se solicita el horóscopo')
 
 parser_copy = parser.copy()
 parser_copy.add_argument('day', type=str, required=True,
-                         help='Date for the horoscope. Accepted values: format (yyyy-mm-dd), today, tomorrow, yesterday')
+                         help='Fecha para el horóscopo. Valores aceptados: Hoy, Mañana, Semanal')
 
 @auth_ns.route('/login')
 class LoginAPI(Resource):
-    '''Authenticate user and provide a JWT token'''
+    '''Autentica al usuario y proporciona un token JWT'''
     @auth_ns.doc(
-        description='Authenticate a user and generate a JWT token.',
+        description='Autentica a un usuario y genera un token JWT.',
         responses={
-            200: 'Success. Returns the JWT token.',
-            401: 'Unauthorized. Invalid credentials.'
+            200: 'Éxito. Devuelve el token JWT.',
+            401: 'No autorizado. Credenciales inválidas.'
         }
     )
     def post(self):
@@ -51,82 +35,82 @@ class LoginAPI(Resource):
 @auth_ns.route('/protected')
 class ProtectedResourceAPI(Resource):
     @auth_ns.doc(
-        description='Access protected data. Requires JWT authentication.',
+        description='Accede a datos protegidos. Requiere autenticación JWT.',
         responses={
-            200: 'Success. Returns the protected data.',
-            401: 'Unauthorized. Invalid or missing JWT token.'
+            200: 'Éxito. Devuelve los datos protegidos.',
+            401: 'No autorizado. Token JWT inválido o faltante.'
         }
     )
     @jwt_required()
     def get(self):
-        return jsonify(message="This is a protected endpoint.")
+        return jsonify(message="Este es un punto final protegido.")
 
 @horoscope_ns.route('/daily')
 class DailyHoroscopeAPI(Resource):
     @horoscope_ns.doc(
-        description='Retrieve the daily horoscope for a specific zodiac sign.',
+        description='Obtén el horóscopo diario para un signo zodiacal específico.',
         params={
-            'sign': 'The zodiac sign for which the daily horoscope is requested.',
-            'day': 'The date for the horoscope. Accepted formats are: YYYY-MM-DD, today, tomorrow, or yesterday.'
+            'sign': 'El signo zodiacal para el cual se solicita el horóscopo diario.',
+            'day': 'La fecha para el horóscopo. Los valores aceptados son: hoy, mañana, semanal'
         }
     )
     @jwt_required()
     def get(self):
+        """Obtén el horóscopo del dia actual, de mañana y semanal para el signo zodiacal especificado"""
         args = parser_copy.parse_args()
         day = args.get('day')
+        day_formated = normalize_string(day)
         zodiac_sign = args.get('sign')
+        zodiac_sign_formated = normalize_string(zodiac_sign)
         try:
-            zodiac_num = ZODIAC_SIGNS[zodiac_sign.capitalize()]
-            if "-" in day:
-                datetime.strptime(day, '%Y-%m-%d')  # Validate date format
-            horoscope_data = get_horoscope_by_day(zodiac_num, day)
+            horoscope_data = get_horoscope_by_day(zodiac_sign_formated, day_formated)
             return jsonify(success=True, data=horoscope_data, status=200)
+
         except KeyError:
-            raise NotFound('The specified zodiac sign does not exist')
-        except AttributeError:
-            raise BadRequest('An error occurred. Please check the URL and parameters.')
-        except ValueError:
-            raise BadRequest('Invalid date format. Please use YYYY-MM-DD')
+            raise NotFound('El signo zodiacal especificado no existe.')
+        except Exception as e:
+            raise BadRequest(f'Ocurrió un error: {str(e)}')
 
 @horoscope_ns.route('/weekly')
 class WeeklyHoroscopeAPI(Resource):
     @horoscope_ns.doc(
-        description='Retrieve the weekly horoscope for a specific zodiac sign.',
+        description='Obtén el horóscopo semanal para un signo zodiacal específico.',
         params={
-            'sign': 'The zodiac sign for which the weekly horoscope is requested.'
+            'sign': 'El signo zodiacal para el cual se solicita el horóscopo semanal.'
         }
     )
     @jwt_required()
     def get(self):
+        """Obtén el horóscopo semanal para el signo zodiacal especificado"""
         args = parser.parse_args()
         zodiac_sign = args.get('sign')
+        zodiac_sign_formated = normalize_string(zodiac_sign)
         try:
-            zodiac_num = ZODIAC_SIGNS[zodiac_sign.capitalize()]
-            horoscope_data = get_horoscope_by_week(zodiac_num)
+            horoscope_data = get_horoscope_by_week(zodiac_sign_formated)
             return jsonify(success=True, data=horoscope_data, status=200)
         except KeyError:
-            raise NotFound('The specified zodiac sign does not exist')
+            raise NotFound('El signo zodiacal especificado no existe')
         except AttributeError:
-            raise BadRequest('An error occurred. Please check the URL and parameters.')
+            raise BadRequest('Ocurrió un error. Por favor, verifica la URL y los parámetros.')
 
 @horoscope_ns.route('/monthly')
 class MonthlyHoroscopeAPI(Resource):
     @horoscope_ns.doc(
-        description='Retrieve the monthly horoscope for a specific zodiac sign.',
+        description='Obtén el horóscopo mensual para un signo zodiacal específico.',
         params={
-            'sign': 'The zodiac sign for which the monthly horoscope is requested.'
+            'sign': 'El signo zodiacal para el cual se solicita el horóscopo mensual.'
         }
     )
     @jwt_required()
     def get(self):
-        """Get the monthly horoscope for the specified zodiac sign"""
+        """Obtén el horóscopo mensual para el signo zodiacal especificado"""
         args = parser.parse_args()
         zodiac_sign = args.get('sign')
+        zodiac_sign_formated = normalize_string(zodiac_sign)
         try:
-            zodiac_num = ZODIAC_SIGNS[zodiac_sign.capitalize()]
-            horoscope_data = get_horoscope_by_month(zodiac_num)
+            horoscope_data = get_horoscope_by_month(zodiac_sign_formated)
             return jsonify(success=True, data=horoscope_data, status=200)
         except KeyError:
-            raise NotFound('The specified zodiac sign does not exist')
+            raise NotFound('El signo zodiacal especificado no existe')
         except AttributeError:
-            raise BadRequest('An error occurred. Please check the URL and parameters.')
+            raise BadRequest('Ocurrió un error. Por favor, verifica la URL y los parámetros.')
