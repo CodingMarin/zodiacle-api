@@ -15,7 +15,7 @@ parser.add_argument('sign', type=str, required=True, help='El signo zodiacal par
 
 parser_copy = parser.copy()
 parser_copy.add_argument('day', type=str, required=True,
-                         help='Fecha para el horóscopo. Valores aceptados: Hoy, Mañana, Semanal')
+                         help='Fecha para el horóscopo. Valores aceptados: Hoy, Manana, Semanal')
 
 @auth_ns.route('/login')
 class LoginAPI(Resource):
@@ -51,12 +51,12 @@ class DailyHoroscopeAPI(Resource):
         description='Obtén el horóscopo diario para un signo zodiacal específico.',
         params={
             'sign': 'El signo zodiacal para el cual se solicita el horóscopo diario.',
-            'day': 'La fecha para el horóscopo. Los valores aceptados son: hoy, mañana, semanal'
+            'day': 'La fecha para el horóscopo. Los valores aceptados son: hoy, manana, semanal'
         }
     )
     @jwt_required()
     def get(self):
-        """Obtén el horóscopo del dia actual, de mañana y semanal para el signo zodiacal especificado"""
+        """Obtén el horóscopo del dia actual, de manana y semanal para el signo zodiacal especificado"""
         args = parser_copy.parse_args()
         day = args.get('day')
         day_formated = normalize_string(day)

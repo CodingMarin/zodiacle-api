@@ -7,7 +7,7 @@ def get_horoscope_by_day(zodiac_sign: str, day: str):
 
     if day == 'hoy':
         url = f"{base_url}diaria-{zodiac_sign}"
-    elif day == 'mañana':
+    elif day == 'manana':
         url = f"{base_url}diaria-manana-{zodiac_sign}"
     elif day == 'semanal':
         url = f"{base_url}semanal-{zodiac_sign}"
