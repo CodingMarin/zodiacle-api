@@ -7,9 +7,21 @@ from flask_jwt_extended import JWTManager
 app = Flask(__name__)
 app.config.from_object(config("APP_SETTINGS"))
 
+# Configuración de CORS
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Configuración de JWT
 jwt = JWTManager(app)
+
+# Configuración de autorizaciones para Swagger
+authorizations = {
+    'Bearer Auth': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization',
+        'description': 'Token JWT de tipo Bearer (e.g., Bearer TOKEN_BEARER)'
+    }
+}
 
 api = Api(
     app,
@@ -31,9 +43,8 @@ api = Api(
     serve_challenge_on_401=True,
     ordered=True,
     tags=['Zodiacle'],
-    decorators=None,
-    url_scheme=None,
-    format_checker=None
+    security=[{'Bearer Auth': []}],
+    authorizations=authorizations
 )
 
 from core import routes

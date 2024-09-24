@@ -7,17 +7,14 @@ from flask_jwt_extended import jwt_required, create_access_token
 from werkzeug.exceptions import BadRequest, NotFound
 
 horoscope_ns = api.namespace('horoscopos', description='Puntos finales para obtener horóscopos para signos zodiacales')
-
 auth_ns = api.namespace('auth', description='Puntos finales de autenticación')
-
 compatibility_ns = api.namespace('compatibilidad', description='Puntos finales para obtener la compatibilidad entre signos zodiacales')
 
 parser = reqparse.RequestParser()
 parser.add_argument('sign', type=str, required=True, help='El signo zodiacal para el cual se solicita el horóscopo')
 
 parser_copy = parser.copy()
-parser_copy.add_argument('day', type=str, required=True,
-                         help='Fecha para el horóscopo. Valores aceptados: Hoy, Manana, Semanal')
+parser_copy.add_argument('day', type=str, required=True, help='Fecha para el horóscopo. Valores aceptados: Hoy, Manana, Semanal')
 
 # Parser para compatibilidad de signos zodiacales
 compatibility_parser = reqparse.RequestParser()
@@ -72,7 +69,6 @@ class DailyHoroscopeAPI(Resource):
         try:
             horoscope_data = get_horoscope_by_day(zodiac_sign_formated, day_formated)
             return jsonify(success=True, data=horoscope_data, status=200)
-
         except KeyError:
             raise NotFound('El signo zodiacal especificado no existe.')
         except Exception as e:
@@ -121,7 +117,6 @@ class MonthlyHoroscopeAPI(Resource):
             raise NotFound('El signo zodiacal especificado no existe')
         except AttributeError:
             raise BadRequest('Ocurrió un error. Por favor, verifica la URL y los parámetros.')
-
 
 @compatibility_ns.route('/signs')
 class CompatibilitySignsAPI(Resource):
