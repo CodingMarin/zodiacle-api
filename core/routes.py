@@ -1,7 +1,7 @@
 from core import api
 from datetime import timedelta
 from flask import jsonify
-from core.utils import get_horoscope_by_day, get_horoscope_by_week, get_horoscope_by_month, normalize_string
+from core.utils import get_horoscope_by_day, get_horoscope_by_week, get_horoscope_by_month, normalize_string, get_compatibility_sign
 from flask_restx import Resource, reqparse
 from flask_jwt_extended import jwt_required, create_access_token
 from werkzeug.exceptions import BadRequest, NotFound
@@ -10,12 +10,19 @@ horoscope_ns = api.namespace('horoscopos', description='Puntos finales para obte
 
 auth_ns = api.namespace('auth', description='Puntos finales de autenticación')
 
+compatibility_ns = api.namespace('compatibilidad', description='Puntos finales para obtener la compatibilidad entre signos zodiacales')
+
 parser = reqparse.RequestParser()
 parser.add_argument('sign', type=str, required=True, help='El signo zodiacal para el cual se solicita el horóscopo')
 
 parser_copy = parser.copy()
 parser_copy.add_argument('day', type=str, required=True,
                          help='Fecha para el horóscopo. Valores aceptados: Hoy, Manana, Semanal')
+
+# Parser para compatibilidad de signos zodiacales
+compatibility_parser = reqparse.RequestParser()
+compatibility_parser.add_argument('sign_a', type=str, required=True, help='Primer signo zodiacal')
+compatibility_parser.add_argument('sign_b', type=str, required=True, help='Segundo signo zodiacal')
 
 @auth_ns.route('/login')
 class LoginAPI(Resource):
@@ -114,3 +121,29 @@ class MonthlyHoroscopeAPI(Resource):
             raise NotFound('El signo zodiacal especificado no existe')
         except AttributeError:
             raise BadRequest('Ocurrió un error. Por favor, verifica la URL y los parámetros.')
+
+
+@compatibility_ns.route('/signs')
+class CompatibilitySignsAPI(Resource):
+    @compatibility_ns.doc(
+        description='Obtén la compatibilidad entre dos signos zodiacales.',
+        params={
+            'sign_a': 'El primer signo zodiacal para verificar compatibilidad.',
+            'sign_b': 'El segundo signo zodiacal para verificar compatibilidad.'
+        }
+    )
+    @jwt_required()
+    def get(self):
+        """Obtén la compatibilidad entre dos signos zodiacales especificados"""
+        args = compatibility_parser.parse_args()
+        sign_a = args.get('sign_a')
+        sign_b = args.get('sign_b')
+
+        sign_a_formatted = normalize_string(sign_a)
+        sign_b_formatted = normalize_string(sign_b)
+
+        try:
+            compatibility_data = get_compatibility_sign(sign_a_formatted, sign_b_formatted)
+            return jsonify(success=True, compatibility=compatibility_data, status=200)
+        except Exception as e:
+            raise BadRequest(f'Ocurrió un error: {str(e)}')

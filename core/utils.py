@@ -57,6 +57,19 @@ def get_horoscope_by_month(zodiac_sign: str):
     else:
         raise Exception("Horórscopo no encontrado")
 
+def get_compatibility_sign(zodiac_sign_a: str, zodiac_sign_b: str):
+    base_url = "https://www.lavanguardia.com/horoscopo/compatibilidad-signos-zodiaco/"
+
+    res = requests.get(
+        f"{base_url}{zodiac_sign_a}-{zodiac_sign_b}")
+
+    soup = BeautifulSoup(res.content, 'html.parser')
+    data = soup.find('div', attrs={'class': 'text-block'})
+
+    if data and data.p:
+        return data.p.text
+    else:
+        raise Exception("Ups! hubo un problema...")
 
 def normalize_string(input_string):
     lower_case_string = input_string.lower()
